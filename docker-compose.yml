@@ -1,0 +1,47 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  popup-service:
+    build:
+      context: .
+      target: popup-service
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      NODE_ENV: development
+      BASE_URL: http://localhost:3000
+      REDIS_URL: redis://redis:6379
+      ACCESS_TOKEN_SECRET: dev-access-token-secret-change-in-prod
+      INVITE_TOKEN_SECRET: dev-invite-token-secret-change-in-prod
+      APPROVAL_TOKEN_SECRET: dev-approval-token-secret-change-prod
+      ADMIN_TOKEN: dev-admin-token
+      HEALTH_CHECK_INTERVAL_MS: 60000
+      HEALTH_CHECK_TIMEOUT_MS: 5000
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  demo-popup-connector:
+    build:
+      context: .
+      target: demo-popup-connector
+    ports:
+      - "4000:4000"
+    environment:
+      PX_PORT: 4000
+      POPUP_SERVICE_URL: http://popup-service:3000
+      PX_NAMESPACE: test-x
+      PX_DISPLAY_NAME: Test X Service
+      PX_CONTACT_EMAIL: test@example.com
+      NODE_ENV: production
+    depends_on:
+      - popup-service

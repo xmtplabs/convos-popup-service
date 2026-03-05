@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registration - Test X Service</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 20px; color: #333; }
+    .card { border: 1px solid #e0e0e0; border-radius: 12px; padding: 24px; }
+    h1 { font-size: 1.4em; }
+    .field { margin: 12px 0; }
+    .field dt { font-weight: 600; }
+    .field dd { margin: 4px 0 0 0; font-family: monospace; word-break: break-all; }
+    .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 8px; margin-top: 16px; color: #856404; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Namespace Registration</h1>
+    <dl class="field">
+      <dt>Namespace</dt>
+      <dd><%= namespace %></dd>
+    </dl>
+    <dl class="field">
+      <dt>Client ID</dt>
+      <dd><%= clientId %></dd>
+    </dl>
+    <dl class="field">
+      <dt>Client Secret</dt>
+      <dd><%= clientSecret %></dd>
+    </dl>
+    <dl class="field">
+      <dt>Status</dt>
+      <dd><%= status %></dd>
+    </dl>
+    <div class="warning">
+      Save the client secret now. It will not be shown again.
+    </div>
+  </div>
+</body>
+</html>
