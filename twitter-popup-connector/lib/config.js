@@ -1,12 +1,12 @@
 export function loadConfig(env = process.env) {
   return Object.freeze({
-    port: parseInt(env.TX_PORT || '4100', 10),
+    port: parseInt(env.TX_PORT || env.PORT || '4100', 10),
     baseUrl: env.TX_BASE_URL || 'http://localhost:4100',
     popupServiceUrl: env.POPUP_SERVICE_URL || 'http://localhost:3000',
     namespace: env.TX_NAMESPACE || 'x-twitter',
     displayName: env.TX_DISPLAY_NAME || 'X (Twitter) Connector',
     contactEmail: env.TX_CONTACT_EMAIL || 'admin@example.com',
-    appIconUrl: env.TX_APP_ICON_URL || 'https://placehold.co/400.png',
+    appIconUrl: env.TX_APP_ICON_URL || `${env.TX_BASE_URL || 'http://localhost:4100'}/app-icon.jpg`,
     clientId: env.TX_CLIENT_ID || null,
     clientSecret: env.TX_CLIENT_SECRET || null,
     twitterApiKey: env.TWITTER_API_KEY || '',

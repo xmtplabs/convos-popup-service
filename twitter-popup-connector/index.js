@@ -31,6 +31,10 @@ const popupClient = new ConvosPopupClient({
 
 // --- Routes ---
 
+app.get('/app-icon.jpg', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'x-logo-black.jpg'));
+});
+
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', registered: !!popupClient.clientId });
 });
