@@ -85,7 +85,7 @@ describe('end-to-end flow', () => {
     const { inviteId } = groupRes.body;
 
     // 5. Visit invite page — shows group title, not pairing ID
-    const inviteRes = await request(app).get(`/invite/${inviteId}`);
+    const inviteRes = await request(app).get(`/invite/x-twitter/${inviteId}`);
     expect(inviteRes.status).toBe(200);
     expect(inviteRes.text).toContain('Chat between @alice and @bob');
     expect(inviteRes.text).toContain('X/Twitter');
@@ -142,7 +142,7 @@ describe('end-to-end flow', () => {
     const joinPath = redirectUrl.pathname + '?t=' + redirectUrl.searchParams.get('t');
     const qrRes = await request(app).get(joinPath);
     expect(qrRes.status).toBe(200);
-    expect(qrRes.text).toContain('Scan to join group');
+    expect(qrRes.text).toContain('Scan to join');
     expect(qrRes.headers['referrer-policy']).toBe('no-referrer');
 
     // Verify the page contains the exact agent invite URL

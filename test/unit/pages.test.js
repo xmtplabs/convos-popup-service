@@ -50,10 +50,10 @@ describe('page routes', () => {
     });
   });
 
-  describe('GET /invite/:inviteId', () => {
+  describe('GET /invite/:namespace/:inviteId', () => {
     it('renders landing page with group title', async () => {
       const app = createPageApp(storage);
-      const res = await request(app).get('/invite/inv_1');
+      const res = await request(app).get('/invite/x-twitter/inv_1');
       expect(res.status).toBe(200);
       expect(res.text).toContain('Test Group');
       expect(res.text).toContain('X/Twitter');
@@ -63,7 +63,7 @@ describe('page routes', () => {
 
     it('returns 404 for unknown invite', async () => {
       const app = createPageApp(storage);
-      const res = await request(app).get('/invite/inv_unknown');
+      const res = await request(app).get('/invite/x-twitter/inv_unknown');
       expect(res.status).toBe(404);
       expect(res.text).toContain('Invite Not Found');
     });
@@ -71,13 +71,13 @@ describe('page routes', () => {
     it('shows unavailable when health check fails', async () => {
       await storage.setHealthCheckResult('x-twitter', false);
       const app = createPageApp(storage);
-      const res = await request(app).get('/invite/inv_1');
+      const res = await request(app).get('/invite/x-twitter/inv_1');
       expect(res.status).toBe(200);
       expect(res.text).toContain('temporarily unavailable');
     });
   });
 
-  describe('GET /join/:joinToken', () => {
+  describe('GET /join/:namespace/:joinToken', () => {
     it('renders QR code page for valid token', async () => {
       const jti = 'tok_test123';
       const signedToken = await signJoinToken(config, {
@@ -95,15 +95,15 @@ describe('page routes', () => {
       });
 
       const app = createPageApp(storage);
-      const res = await request(app).get(`/join/${jti}?t=${signedToken}`);
+      const res = await request(app).get(`/join/x-twitter/${jti}?t=${signedToken}`);
       expect(res.status).toBe(200);
-      expect(res.text).toContain('Scan to join group');
+      expect(res.text).toContain('Scan to join');
       expect(res.headers['referrer-policy']).toBe('no-referrer');
     });
 
     it('returns 403 for expired token', async () => {
       const app = createPageApp(storage);
-      const res = await request(app).get('/join/tok_fake?t=invalid.jwt.token');
+      const res = await request(app).get('/join/x-twitter/tok_fake?t=invalid.jwt.token');
       expect(res.status).toBe(403);
       expect(res.text).toContain('expired');
     });
@@ -125,9 +125,9 @@ describe('page routes', () => {
       });
 
       const app = createPageApp(storage);
-      const res = await request(app).get(`/join/${jti}?t=${signedToken}`);
+      const res = await request(app).get(`/join/x-twitter/${jti}?t=${signedToken}`);
       expect(res.status).toBe(200);
-      expect(res.text).toContain('Scan to join group');
+      expect(res.text).toContain('Scan to join');
     });
 
     it('returns 500 error when inviteCodes is null', async () => {
@@ -158,7 +158,7 @@ describe('page routes', () => {
       });
 
       const app = createPageApp(storage);
-      const res = await request(app).get(`/join/${jti}?t=${signedToken}`);
+      const res = await request(app).get(`/join/x-twitter/${jti}?t=${signedToken}`);
       expect(res.status).toBe(500);
       expect(res.text).toContain('Invite Unavailable');
     });
@@ -181,7 +181,7 @@ describe('page routes', () => {
       await storage.consumeJoinToken(jti);
 
       const app = createPageApp(storage);
-      const res = await request(app).get(`/join/${jti}?t=${signedToken}`);
+      const res = await request(app).get(`/join/x-twitter/${jti}?t=${signedToken}`);
       expect(res.status).toBe(403);
       expect(res.text).toContain('Already Used');
     });

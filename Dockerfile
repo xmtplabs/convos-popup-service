@@ -14,7 +14,7 @@ COPY package.json ./
 COPY lib/ ./lib/
 COPY index.js ./
 ENV NODE_ENV=production
-EXPOSE 3000
+EXPOSE 3000 9090
 HEALTHCHECK --interval=30s --timeout=5s CMD node -e "fetch('http://localhost:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 CMD ["node", "lib/standalone.js"]
 
