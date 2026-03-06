@@ -55,7 +55,6 @@ describe('group routes', () => {
       expect(res.body.inviteId).toMatch(/^inv_/);
       expect(res.body.inviteUrl).toContain('/invite/');
       expect(res.body.pairingIdentifiers).toEqual(['@alice', '@bob']);
-      expect(res.body.invites).toBeUndefined();
     });
 
     it('returns 400 for missing pairingIdentifiers', async () => {

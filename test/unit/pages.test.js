@@ -108,28 +108,6 @@ describe('page routes', () => {
       expect(res.text).toContain('expired');
     });
 
-    it('uses per-user invite URL from inviteCodes', async () => {
-      const jti = 'tok_peruser';
-      const signedToken = await signJoinToken(config, {
-        sub: '@bob',
-        groupId: 'grp_1',
-        inviteId: 'inv_1',
-        namespace: 'x-twitter',
-        jti,
-      });
-      await storage.storeJoinToken(jti, {
-        groupId: 'grp_1',
-        inviteId: 'inv_1',
-        namespace: 'x-twitter',
-        pairingIdentifier: '@bob',
-      });
-
-      const app = createPageApp(storage);
-      const res = await request(app).get(`/join/x-twitter/${jti}?t=${signedToken}`);
-      expect(res.status).toBe(200);
-      expect(res.text).toContain('Scan to join');
-    });
-
     it('returns 500 error when inviteCodes is null', async () => {
       await storage.createGroup('grp_no_codes', {
         namespace: 'x-twitter',

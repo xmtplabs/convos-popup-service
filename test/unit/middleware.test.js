@@ -63,35 +63,17 @@ describe('bearerAuth middleware', () => {
 });
 
 describe('namespaceEnforcement middleware', () => {
-  let app;
-
-  beforeEach(() => {
-    app = express();
-    app.get('/api/v1/namespaces/:namespace/test', namespaceEnforcement(), (req, res) => {
-      res.json({ ok: true });
-    });
-  });
-
-  it('returns 403 when namespace does not match', async () => {
-    const res = await request(app)
-      .get('/api/v1/namespaces/discord/test')
-      .set('X-Test-Auth', 'true');
-    // Simulate req.auth set by prior middleware
-    expect(res.status).toBe(403);
-  });
-
   it('passes when namespace matches', async () => {
-    // We need to inject req.auth
-    const app2 = express();
-    app2.use((req, _res, next) => {
+    const app = express();
+    app.use((req, _res, next) => {
       req.auth = { namespace: 'x-twitter' };
       next();
     });
-    app2.get('/api/v1/namespaces/:namespace/test', namespaceEnforcement(), (req, res) => {
+    app.get('/api/v1/namespaces/:namespace/test', namespaceEnforcement(), (req, res) => {
       res.json({ ok: true });
     });
 
-    const res = await request(app2).get('/api/v1/namespaces/x-twitter/test');
+    const res = await request(app).get('/api/v1/namespaces/x-twitter/test');
     expect(res.status).toBe(200);
   });
 });

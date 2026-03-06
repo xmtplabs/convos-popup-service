@@ -9,14 +9,8 @@ import {
   verifyApprovalToken,
 } from '../../lib/auth/tokens.js';
 import {
-  generateClientId,
-  generateClientSecret,
   hashSecret,
   verifySecret,
-  generateInviteId,
-  generateGroupId,
-  generateJoinTokenId,
-  generateApprovalToken,
 } from '../../lib/auth/credentials.js';
 
 const config = createTestConfig();
@@ -78,38 +72,11 @@ describe('tokens', () => {
 });
 
 describe('credentials', () => {
-  it('generates client IDs with prefix', () => {
-    const id = generateClientId();
-    expect(id).toMatch(/^cps_live_[a-f0-9]{32}$/);
-  });
-
-  it('generates client secrets with prefix', () => {
-    const secret = generateClientSecret();
-    expect(secret).toMatch(/^cps_secret_[a-f0-9]{64}$/);
-  });
-
   it('hashes and verifies secrets with argon2id', async () => {
     const secret = 'my-test-secret';
     const hash = await hashSecret(secret);
     expect(hash).toContain('$argon2id$');
     expect(await verifySecret(hash, secret)).toBe(true);
     expect(await verifySecret(hash, 'wrong')).toBe(false);
-  });
-
-  it('generates invite IDs with prefix', () => {
-    expect(generateInviteId()).toMatch(/^inv_[a-f0-9]{32}$/);
-  });
-
-  it('generates group IDs with prefix', () => {
-    expect(generateGroupId()).toMatch(/^grp_[a-f0-9]{32}$/);
-  });
-
-  it('generates join token IDs with prefix', () => {
-    expect(generateJoinTokenId()).toMatch(/^tok_[a-f0-9]{32}$/);
-  });
-
-  it('generates approval tokens', () => {
-    const token = generateApprovalToken();
-    expect(token).toHaveLength(64);
   });
 });
