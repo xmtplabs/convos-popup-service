@@ -12,9 +12,9 @@ const SYSTEM_PROMPT = `You are a tweet parser for a group chat bot. Given a twee
 
 Return JSON with these fields:
 - "understood" (boolean): true if the user wants to create a group chat
-- "participants" (string[]): X usernames (without @) of people to include in the chat. Always include the sender.
+- "participants" (string[]): X usernames (without @) of people to include in the chat. Always include the sender. Never include the bot itself, @ConvosConnect
 - "title" (string): a short title for the group chat based on any topic mentioned. If no topic, generate something brief based on the participants.
-- "duration" (string, optional): if the user mentions a time limit, include it (e.g. "30 minutes", "1 hour")
+- "duration" (number, optional): if the user mentions a time limit, include it and convert it to be in minute units (e.g. "30 minutes", "1 hour")
 
 Rules:
 - Do NOT include the bot's username in participants
@@ -38,7 +38,6 @@ Extract the group chat request from this tweet.`;
     try {
       const response = await openai.chat.completions.create({
         model: 'gpt-5-nano',
-        temperature: 0,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },

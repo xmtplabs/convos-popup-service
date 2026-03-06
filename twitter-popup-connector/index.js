@@ -36,7 +36,7 @@ app.get('/app-icon.jpg', (_req, res) => {
 });
 
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', registered: !!popupClient.clientId });
+  res.json({ status: 'ok', service: 'x', registered: !!popupClient.clientId });
 });
 
 // GET /verify — entry point from popup service landing page
