@@ -129,18 +129,26 @@ app.get('/callback', async (req, res) => {
 async function start() {
   // Register namespace if no pre-provisioned credentials
   if (!config.clientId || !config.clientSecret) {
+    const params = {
+      namespace: config.namespace,
+      displayName: config.displayName,
+      verificationEndpoint: `${config.baseUrl}/verify`,
+      appIconUrl: config.appIconUrl,
+      contactEmail: config.contactEmail,
+    };
     try {
-      await popupClient.register({
-        namespace: config.namespace,
-        displayName: config.displayName,
-        verificationEndpoint: `${config.baseUrl}/verify`,
-        appIconUrl: config.appIconUrl,
-        contactEmail: config.contactEmail,
-      });
+      const result = await popupClient.register(params);
       console.log(`Registered namespace: ${config.namespace}`);
+      console.log(`TX_CLIENT_ID=${result.clientId}`);
+      console.log(`TX_CLIENT_SECRET=${result.clientSecret}`);
+      console.log('Save these as environment variables to skip registration on restart.');
     } catch (err) {
-      console.error('Failed to register namespace:', err.message);
-      process.exit(1);
+      if (err.status === 409) {
+        console.log(`Namespace '${config.namespace}' already registered, continuing`);
+      } else {
+        console.error('Failed to register namespace:', err.message, err.details || '', params);
+        process.exit(1);
+      }
     }
   }
 

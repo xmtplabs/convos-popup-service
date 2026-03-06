@@ -6,6 +6,13 @@ echo "ACCESS_TOKEN_SECRET=$(openssl rand -base64 48)"
 echo "INVITE_TOKEN_SECRET=$(openssl rand -base64 48)"
 echo "APPROVAL_TOKEN_SECRET=$(openssl rand -base64 48)"
 echo "ADMIN_TOKEN=$(openssl rand -base64 32)"
+XMTP_AGENT_KEY=$(openssl rand -hex 32)
+XMTP_WALLET=$(node --input-type=module -e "
+import { privateKeyToAccount } from 'viem/accounts';
+console.log(privateKeyToAccount('0x$XMTP_AGENT_KEY').address);
+" 2>/dev/null || echo "(run from project root with node_modules installed)")
+echo "XMTP_AGENT_KEY=$XMTP_AGENT_KEY"
+echo "# Wallet address: $XMTP_WALLET"
 echo "XMTP_DB_ENCRYPTION_KEY=$(openssl rand -hex 32)"
 echo "BASE_URL=https://<popup-service>.up.railway.app"
 echo ""
