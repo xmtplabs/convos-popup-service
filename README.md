@@ -235,13 +235,37 @@ The repo deploys two services to Railway: **popup-service** and **twitter-popup-
 | popup-service | `railway.toml` (default) | `Dockerfile.railway` |
 | twitter-popup-connector | `railway.twitter.toml` | `Dockerfile.twitter.railway` |
 
+### How the services talk to each other
+
+Three URL env vars wire the two services together:
+
+| Var | Set on | Points to | Purpose |
+|-----|--------|-----------|---------|
+| `BASE_URL` | popup-service | itself | Used to generate invite links, OAuth callbacks, and as the JWT issuer |
+| `TX_BASE_URL` | twitter-connector | itself | Registered with popup-service as the `verificationEndpoint`; also used as the OAuth redirect URI for Twitter login |
+| `POPUP_SERVICE_URL` | twitter-connector | popup-service | All API calls from the connector to popup-service (register, create group, verify user) |
+
+`POPUP_SERVICE_URL` and `BASE_URL` must be the same URL — they both point to the popup-service.
+
+### How the Twitter bot works
+
+The bot **polls** — no webhooks. It calls Twitter API v2's `userMentionTimeline` every 15 seconds (configurable via `TX_POLL_INTERVAL_MS`), processes new mentions, and replies. No webhook URL registration, no CRC challenge, no inbound POST routes from Twitter.
+
+The only inbound route from Twitter is the **OAuth 2.0 callback** (`TX_BASE_URL/callback`) used when a user verifies their identity. This URL must be registered in the Twitter Developer Portal as a callback URL for your OAuth 2.0 app.
+
+### How Railway domains work
+
+Railway auto-generates a public `*.up.railway.app` URL for each service. You find it in **Settings > Networking > Public Networking** after the first deploy. You can also add a custom domain there.
+
+The services don't discover each other automatically — you manually copy the popup-service's Railway URL into the twitter connector's `POPUP_SERVICE_URL` (and vice versa for `TX_BASE_URL` if the popup-service needs to redirect users to the connector's `/verify` endpoint — which it does, since that URL was registered as `verificationEndpoint` during namespace registration).
+
 ### 1. Generate secrets
 
 ```
 ./scripts/generate-secrets.sh
 ```
 
-This prints two sections of env vars — one per service. Replace the `<placeholder>` values with your actual Twitter API keys, OpenAI key, etc.
+Prints two sections of env vars — one per service. Replace `<placeholder>` values with your actual Twitter API keys, OpenAI key, etc.
 
 ### 2. Create the Railway project
 
@@ -251,20 +275,29 @@ This prints two sections of env vars — one per service. Replace the `<placehol
 
 Both services must use the repo root (`.`) as their root directory.
 
-### 3. Set environment variables
+### 3. Deploy once to get domains
 
-Paste each section from the generate-secrets output into the corresponding service's **Variables** tab in the Railway dashboard.
+Push to main. Both services will build and start. The first deploy will likely fail health checks because the env vars aren't set yet — that's fine. Go to **Settings > Networking > Public Networking** on each service and generate a domain (or note the one Railway assigned).
 
-The cross-service link: set the twitter connector's `POPUP_SERVICE_URL` to the popup-service's public Railway URL (e.g. `https://popup-service-production.up.railway.app`). This must match the popup-service's `BASE_URL`.
+### 4. Set environment variables
 
-### 4. Deploy
+Paste each section from the generate-secrets output into the corresponding service's **Variables** tab. Now that you have the Railway domains, fill in the actual URLs:
 
-Push to main. Railway builds both services from the repo root context. Each Dockerfile copies all workspace `package.json` files so `npm ci` resolves the full workspace graph — the twitter connector imports `convos-popup-client` as a sibling workspace package.
+- popup-service: set `BASE_URL` to its own Railway URL (e.g. `https://popup-service-production.up.railway.app`)
+- twitter-connector: set `TX_BASE_URL` to its own Railway URL, and `POPUP_SERVICE_URL` to the popup-service's URL (must match `BASE_URL` above)
 
-### 5. Verify
+### 5. Configure Twitter Developer Portal
 
-- `https://<popup-service>.up.railway.app/health` should return `{"status":"ok"}`
-- `https://<twitter-connector>.up.railway.app/health` should return `{"status":"ok",...}`
+In your Twitter app settings, add `<TX_BASE_URL>/callback` as an OAuth 2.0 redirect URI (e.g. `https://twitter-connector-production.up.railway.app/callback`). Without this, the user verification flow will fail.
+
+### 6. Redeploy
+
+Saving the env vars triggers a redeploy. Both services should come up healthy.
+
+### 7. Verify
+
+- `https://<popup-service>.up.railway.app/health` → `{"status":"ok"}`
+- `https://<twitter-connector>.up.railway.app/health` → `{"status":"ok",...}`
 
 ---
 

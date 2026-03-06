@@ -11,7 +11,7 @@ FROM node:22-slim
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
-COPY convos-popup-client/ ./convos-popup-client/
+COPY convos-popup-client/ ./node_modules/convos-popup-client/
 COPY twitter-popup-connector/ ./twitter-popup-connector/
 ENV NODE_ENV=production
 EXPOSE 4100
