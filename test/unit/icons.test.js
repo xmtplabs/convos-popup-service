@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import express from 'express';
 import request from 'supertest';
-import { MemoryStorage } from '../../lib/storage/MemoryStorage.js';
+import { MemoryStorage } from '../../lib/storage/memory-storage.js';
 import { iconRoutes } from '../../lib/routes/icons.js';
 
 describe('icon routes', () => {

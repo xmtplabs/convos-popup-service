@@ -10,7 +10,7 @@ import express from 'express';
 import request from 'supertest';
 import { createTestConfig } from '../helpers/setup.js';
 import { FIXTURES } from '../helpers/fixtures.js';
-import { MemoryStorage } from '../../lib/storage/MemoryStorage.js';
+import { MemoryStorage } from '../../lib/storage/memory-storage.js';
 import { connectRoutes } from '../../lib/routes/connect.js';
 import { createBearerAuth } from '../../lib/middleware/bearerAuth.js';
 import { signAccessToken } from '../../lib/auth/tokens.js';

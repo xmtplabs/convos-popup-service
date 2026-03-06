@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import { createTestConfig } from '../helpers/setup.js';
-import { MemoryStorage } from '../../lib/storage/MemoryStorage.js';
+import { MemoryStorage } from '../../lib/storage/memory-storage.js';
 import { authRoutes } from '../../lib/routes/auth.js';
 import { hashSecret } from '../../lib/auth/credentials.js';
 

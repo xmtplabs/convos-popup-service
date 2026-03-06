@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import { createTestConfig } from '../helpers/setup.js';
-import { MemoryStorage } from '../../lib/storage/MemoryStorage.js';
+import { MemoryStorage } from '../../lib/storage/memory-storage.js';
 import { verifyRoutes } from '../../lib/routes/verify.js';
 import { signAccessToken } from '../../lib/auth/tokens.js';
 import { createBearerAuth } from '../../lib/middleware/bearerAuth.js';

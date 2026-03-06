@@ -9,8 +9,8 @@ vi.mock('../../lib/utils/fetchIcon.js', () => ({
 import request from 'supertest';
 import { createTestConfig } from '../helpers/setup.js';
 import { createLogger } from '../../lib/logger.js';
-import { MemoryStorage } from '../../lib/storage/MemoryStorage.js';
-import { MockAgent } from '../../lib/agent/MockAgent.js';
+import { MemoryStorage } from '../../lib/storage/memory-storage.js';
+import { MockAgent } from '../../lib/agent/mock-agent.js';
 import { createApp } from '../../lib/app.js';
 import { createNotifier } from '../../lib/notifications.js';
 

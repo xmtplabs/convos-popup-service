@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { MemoryStorage } from '../../lib/storage/MemoryStorage.js';
+import { MemoryStorage } from '../../lib/storage/memory-storage.js';
 
 function runStorageTests(createInstance) {
   let storage;

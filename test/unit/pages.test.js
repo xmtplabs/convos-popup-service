@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import request from 'supertest';
 import { createTestConfig } from '../helpers/setup.js';
-import { MemoryStorage } from '../../lib/storage/MemoryStorage.js';
+import { MemoryStorage } from '../../lib/storage/memory-storage.js';
 import { inviteRoutes } from '../../lib/routes/invite.js';
 import { joinRoutes } from '../../lib/routes/join.js';
 import { signJoinToken } from '../../lib/auth/tokens.js';

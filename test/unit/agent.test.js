@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { MockAgent } from '../../lib/agent/MockAgent.js';
-import { XmtpAgent } from '../../lib/agent/XmtpAgent.js';
+import { MockAgent } from '../../lib/agent/mock-agent.js';
+import { XmtpAgent } from '../../lib/agent/xmtp-agent.js';
 import { createAgent } from '../../lib/agent/index.js';
 import { createTestConfig, createTestLogger } from '../helpers/setup.js';
 
@@ -44,14 +44,14 @@ describe('createAgent factory', () => {
   it('always returns XmtpAgent', () => {
     const config = createTestConfig();
     const logger = createTestLogger();
-    const agent = createAgent(config, null, logger);
+    const agent = createAgent(config, null, logger, null);
     expect(agent).toBeInstanceOf(XmtpAgent);
   });
 
   it('returns XmtpAgent when XMTP_AGENT_KEY is set', () => {
     const config = createTestConfig({ XMTP_AGENT_KEY: '0xtest' });
     const logger = createTestLogger();
-    const agent = createAgent(config, null, logger);
+    const agent = createAgent(config, null, logger, null);
     expect(agent).toBeInstanceOf(XmtpAgent);
   });
 });
