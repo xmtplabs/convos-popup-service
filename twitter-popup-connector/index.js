@@ -64,6 +64,7 @@ app.get('/verify', (req, res) => {
     state,
     codeChallenge,
     scopes: ['tweet.read', 'users.read'],
+    oauthBaseUrl: config.twitterOAuthBaseUrl,
   });
 
   res.render('x-verify', { authUrl });
@@ -96,10 +97,13 @@ app.get('/callback', async (req, res) => {
       code,
       redirectUri: `${config.baseUrl}/callback`,
       codeVerifier: session.codeVerifier,
+      apiBaseUrl: config.twitterApiBaseUrl,
     });
 
     // Get the user's X username
-    const { username } = await oauth.getAuthenticatedUser(tokenData.access_token);
+    const { username } = await oauth.getAuthenticatedUser(tokenData.access_token, {
+      apiBaseUrl: config.twitterApiBaseUrl,
+    });
 
     // Verify with popup service
     const result = await popupClient.verifyUser({
@@ -158,6 +162,7 @@ async function start() {
     apiSecret: config.twitterApiSecret,
     accessToken: config.twitterAccessToken,
     accessSecret: config.twitterAccessSecret,
+    apiBaseUrl: config.twitterApiBaseUrl,
   });
 
   const parser = createParser({ apiKey: config.openaiApiKey });

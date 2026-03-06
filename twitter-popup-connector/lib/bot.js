@@ -50,6 +50,8 @@ export function createBot({ twitterClient, parser, popupClient, store, config })
     const senderUsername = resolveUsername(tweet.author_id, includes);
     if (!senderUsername) return;
 
+    console.log(`[bot] Processing tweet #${tweetId} from @${senderUsername}: "${tweet.text}"`);
+
     const mentionedUsernames = extractMentionedUsernames(tweet, includes);
 
     // No other @ mentions besides the bot — explain capabilities
@@ -122,6 +124,8 @@ export function createBot({ twitterClient, parser, popupClient, store, config })
       const { tweets, includes, meta } = await twitterClient.getMentions(sinceId);
 
       if (tweets.length === 0) return;
+
+      console.log(`[bot] Received ${tweets.length} mention(s)`);
 
       // Process oldest first
       for (const tweet of tweets.reverse()) {

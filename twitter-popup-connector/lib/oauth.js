@@ -8,7 +8,7 @@ export function generateCodeChallenge(verifier) {
   return crypto.createHash('sha256').update(verifier).digest('base64url');
 }
 
-export function buildAuthorizationUrl({ clientId, redirectUri, state, codeChallenge, scopes }) {
+export function buildAuthorizationUrl({ clientId, redirectUri, state, codeChallenge, scopes, oauthBaseUrl }) {
   const params = new URLSearchParams({
     response_type: 'code',
     client_id: clientId,
@@ -18,10 +18,13 @@ export function buildAuthorizationUrl({ clientId, redirectUri, state, codeChalle
     code_challenge_method: 'S256',
     scope: scopes.join(' '),
   });
-  return `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
+  const base = oauthBaseUrl
+    ? `${oauthBaseUrl}/oauth2/authorize`
+    : 'https://twitter.com/i/oauth2/authorize';
+  return `${base}?${params.toString()}`;
 }
 
-export async function exchangeCodeForToken({ clientId, clientSecret, code, redirectUri, codeVerifier }) {
+export async function exchangeCodeForToken({ clientId, clientSecret, code, redirectUri, codeVerifier, apiBaseUrl }) {
   const body = new URLSearchParams({
     grant_type: 'authorization_code',
     code,
@@ -38,7 +41,11 @@ export async function exchangeCodeForToken({ clientId, clientSecret, code, redir
     headers['Authorization'] = `Basic ${credentials}`;
   }
 
-  const res = await fetch('https://api.twitter.com/2/oauth2/token', {
+  const tokenUrl = apiBaseUrl
+    ? `${apiBaseUrl}/2/oauth2/token`
+    : 'https://api.twitter.com/2/oauth2/token';
+
+  const res = await fetch(tokenUrl, {
     method: 'POST',
     headers,
     body: body.toString(),
@@ -52,8 +59,12 @@ export async function exchangeCodeForToken({ clientId, clientSecret, code, redir
   return res.json();
 }
 
-export async function getAuthenticatedUser(accessToken) {
-  const res = await fetch('https://api.twitter.com/2/users/me', {
+export async function getAuthenticatedUser(accessToken, { apiBaseUrl } = {}) {
+  const userUrl = apiBaseUrl
+    ? `${apiBaseUrl}/2/users/me`
+    : 'https://api.twitter.com/2/users/me';
+
+  const res = await fetch(userUrl, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 

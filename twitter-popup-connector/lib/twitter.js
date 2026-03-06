@@ -1,6 +1,10 @@
 import { TwitterApi } from 'twitter-api-v2';
 
-export function createTwitterClient({ apiKey, apiSecret, accessToken, accessSecret }) {
+export function createTwitterClient({ apiKey, apiSecret, accessToken, accessSecret, apiBaseUrl }) {
+  if (apiBaseUrl) {
+    return createFakeClient(apiBaseUrl, accessToken);
+  }
+
   const client = new TwitterApi({
     appKey: apiKey,
     appSecret: apiSecret,
@@ -52,6 +56,67 @@ export function createTwitterClient({ apiKey, apiSecret, accessToken, accessSecr
     return v2.tweet({
       text,
       reply: { in_reply_to_tweet_id: tweetId },
+    });
+  }
+
+  return {
+    getBotUserId,
+    getMentions,
+    getTweet,
+    replyToTweet,
+  };
+}
+
+function createFakeClient(apiBaseUrl, bearerToken) {
+  let cachedBotUserId = null;
+
+  async function apiFetch(path, options = {}) {
+    const res = await fetch(`${apiBaseUrl}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${bearerToken}`,
+        ...options.headers,
+      },
+    });
+    if (!res.ok) {
+      throw new Error(`Fake Twitter API error: ${res.status} ${await res.text()}`);
+    }
+    return res.json();
+  }
+
+  async function getBotUserId() {
+    if (cachedBotUserId) return cachedBotUserId;
+    const data = await apiFetch('/2/users/me');
+    cachedBotUserId = data.data.id;
+    return cachedBotUserId;
+  }
+
+  async function getMentions(sinceId) {
+    const userId = await getBotUserId();
+    const params = new URLSearchParams();
+    if (sinceId) params.set('since_id', sinceId);
+    const qs = params.toString();
+    const data = await apiFetch(`/2/users/${userId}/mentions${qs ? '?' + qs : ''}`);
+    return {
+      tweets: data.data || [],
+      includes: data.includes || {},
+      meta: data.meta || {},
+    };
+  }
+
+  async function getTweet(tweetId) {
+    const data = await apiFetch(`/2/tweets/${tweetId}`);
+    return {
+      tweet: data.data,
+      includes: data.includes || {},
+    };
+  }
+
+  async function replyToTweet(tweetId, text) {
+    return apiFetch('/2/tweets', {
+      method: 'POST',
+      body: JSON.stringify({ text, reply: { in_reply_to_tweet_id: tweetId } }),
     });
   }
 

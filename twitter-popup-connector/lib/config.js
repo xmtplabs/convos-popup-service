@@ -17,6 +17,8 @@ export function loadConfig(env = process.env) {
     twitterOAuthClientId: env.TWITTER_OAUTH_CLIENT_ID || '',
     twitterOAuthClientSecret: env.TWITTER_OAUTH_CLIENT_SECRET || '',
     openaiApiKey: env.OPENAI_API_KEY || '',
+    twitterApiBaseUrl: env.TWITTER_API_BASE_URL || null,
+    twitterOAuthBaseUrl: env.TWITTER_OAUTH_BASE_URL || null,
     pollIntervalMs: parseInt(env.TX_POLL_INTERVAL_MS || '15000', 10),
     nodeEnv: env.NODE_ENV || 'development',
   });

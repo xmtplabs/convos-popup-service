@@ -35,19 +35,29 @@ Bot username: ${botUsername}
 
 Extract the group chat request from this tweet.`;
 
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: userPrompt },
+    ];
+
+    console.log('[parser] OpenAI request:', JSON.stringify({ model: 'gpt-5-nano', messages }, null, 2));
+
     try {
       const response = await openai.chat.completions.create({
         model: 'gpt-5-nano',
         response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userPrompt },
-        ],
+        messages,
       });
 
-      const raw = JSON.parse(response.choices[0].message.content);
-      return ParseResultSchema.parse(raw);
-    } catch {
+      const rawContent = response.choices[0].message.content;
+      console.log('[parser] OpenAI raw response:', rawContent);
+
+      const raw = JSON.parse(rawContent);
+      const parsed = ParseResultSchema.parse(raw);
+      console.log('[parser] Parsed result:', JSON.stringify(parsed));
+      return parsed;
+    } catch (err) {
+      console.error('[parser] OpenAI error:', err.message);
       return { understood: false, participants: [], title: '' };
     }
   }
