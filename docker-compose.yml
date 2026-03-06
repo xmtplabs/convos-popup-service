@@ -12,7 +12,6 @@ services:
   popup-service:
     build:
       context: .
-      target: popup-service
     ports:
       - "3000:3000"
     environment:
@@ -32,8 +31,7 @@ services:
 
   demo-popup-connector:
     build:
-      context: .
-      target: demo-popup-connector
+      context: ./demo-popup-connector
     ports:
       - "4000:4000"
     environment:
@@ -42,6 +40,31 @@ services:
       PX_NAMESPACE: test-x
       PX_DISPLAY_NAME: Test X Service
       PX_CONTACT_EMAIL: test@example.com
+      NODE_ENV: production
+    depends_on:
+      - popup-service
+
+  twitter-popup-connector:
+    build:
+      context: .
+      dockerfile: Dockerfile.twitter.railway
+    ports:
+      - "4100:4100"
+    environment:
+      TX_PORT: 4100
+      TX_BASE_URL: http://localhost:4100
+      POPUP_SERVICE_URL: http://popup-service:3000
+      TX_NAMESPACE: x-twitter
+      TX_DISPLAY_NAME: X (Twitter) Connector
+      TX_CONTACT_EMAIL: admin@example.com
+      TWITTER_API_KEY: ${TWITTER_API_KEY}
+      TWITTER_API_SECRET: ${TWITTER_API_SECRET}
+      TWITTER_ACCESS_TOKEN: ${TWITTER_ACCESS_TOKEN}
+      TWITTER_ACCESS_SECRET: ${TWITTER_ACCESS_SECRET}
+      TWITTER_BOT_USERNAME: ${TWITTER_BOT_USERNAME:-ConvosConnect}
+      TWITTER_OAUTH_CLIENT_ID: ${TWITTER_OAUTH_CLIENT_ID}
+      TWITTER_OAUTH_CLIENT_SECRET: ${TWITTER_OAUTH_CLIENT_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
       NODE_ENV: production
     depends_on:
       - popup-service

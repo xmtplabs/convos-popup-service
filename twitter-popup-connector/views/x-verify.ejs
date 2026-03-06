@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in with X</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 48px 20px;
+      color: #000;
+      background: #fff;
+      -webkit-font-smoothing: antialiased;
+    }
+    .card {
+      border: 1px solid #ebebeb;
+      border-radius: 24px;
+      padding: 40px 32px;
+    }
+    .logo { text-align: center; margin-bottom: 24px; }
+    h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; text-align: center; }
+    p { font-size: 15px; color: #666; margin-top: 8px; text-align: center; }
+    .btn-primary {
+      display: block;
+      width: 100%;
+      background: #fc4f37;
+      color: #fff;
+      text-decoration: none;
+      padding: 16px 32px;
+      border-radius: 40px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      border: none;
+      cursor: pointer;
+      margin-top: 24px;
+      transition: background 0.15s;
+      text-align: center;
+    }
+    .btn-primary:hover { background: #e8402c; }
+    .note { color: #b2b2b2; font-size: 13px; margin-top: 16px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 20" width="20" height="25">
+        <circle cx="8" cy="8" fill="black" r="8"/>
+        <path d="M8.00003 16L10.3094 20H5.69063L8.00003 16Z" fill="black"/>
+      </svg>
+    </div>
+    <h1>Verify Your Identity</h1>
+    <p>Sign in with your X account to confirm you are who you say you are.</p>
+    <a href="<%= authUrl %>" class="btn-primary">Sign in with X</a>
+    <p class="note">You will be redirected to X to authorize read access to your profile.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+export function loadConfig(env = process.env) {
+  return Object.freeze({
+    port: parseInt(env.TX_PORT || '4100', 10),
+    baseUrl: env.TX_BASE_URL || 'http://localhost:4100',
+    popupServiceUrl: env.POPUP_SERVICE_URL || 'http://localhost:3000',
+    namespace: env.TX_NAMESPACE || 'x-twitter',
+    displayName: env.TX_DISPLAY_NAME || 'X (Twitter) Connector',
+    contactEmail: env.TX_CONTACT_EMAIL || 'admin@example.com',
+    appIconUrl: env.TX_APP_ICON_URL || 'https://placehold.co/400.png',
+    clientId: env.TX_CLIENT_ID || null,
+    clientSecret: env.TX_CLIENT_SECRET || null,
+    twitterApiKey: env.TWITTER_API_KEY || '',
+    twitterApiSecret: env.TWITTER_API_SECRET || '',
+    twitterAccessToken: env.TWITTER_ACCESS_TOKEN || '',
+    twitterAccessSecret: env.TWITTER_ACCESS_SECRET || '',
+    twitterBotUsername: env.TWITTER_BOT_USERNAME || 'ConvosConnect',
+    twitterOAuthClientId: env.TWITTER_OAUTH_CLIENT_ID || '',
+    twitterOAuthClientSecret: env.TWITTER_OAUTH_CLIENT_SECRET || '',
+    openaiApiKey: env.OPENAI_API_KEY || '',
+    pollIntervalMs: parseInt(env.TX_POLL_INTERVAL_MS || '15000', 10),
+    nodeEnv: env.NODE_ENV || 'development',
+  });
+}

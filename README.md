@@ -226,6 +226,48 @@ This stops all containers and removes volumes.
 
 ---
 
+## Deploying to Railway
+
+The repo deploys two services to Railway: **popup-service** and **twitter-popup-connector**. Each has its own Dockerfile and Railway config at the repo root.
+
+| Service | Config Path | Dockerfile |
+|---------|-------------|------------|
+| popup-service | `railway.toml` (default) | `Dockerfile.railway` |
+| twitter-popup-connector | `railway.twitter.toml` | `Dockerfile.twitter.railway` |
+
+### 1. Generate secrets
+
+```
+./scripts/generate-secrets.sh
+```
+
+This prints two sections of env vars — one per service. Replace the `<placeholder>` values with your actual Twitter API keys, OpenAI key, etc.
+
+### 2. Create the Railway project
+
+1. Create a new project in the Railway dashboard
+2. Add a service for **popup-service** — connect the repo, leave Config Path blank (defaults to `railway.toml`)
+3. Add a second service for **twitter-popup-connector** — connect the same repo, set **Config Path** to `railway.twitter.toml`
+
+Both services must use the repo root (`.`) as their root directory.
+
+### 3. Set environment variables
+
+Paste each section from the generate-secrets output into the corresponding service's **Variables** tab in the Railway dashboard.
+
+The cross-service link: set the twitter connector's `POPUP_SERVICE_URL` to the popup-service's public Railway URL (e.g. `https://popup-service-production.up.railway.app`). This must match the popup-service's `BASE_URL`.
+
+### 4. Deploy
+
+Push to main. Railway builds both services from the repo root context. Each Dockerfile copies all workspace `package.json` files so `npm ci` resolves the full workspace graph — the twitter connector imports `convos-popup-client` as a sibling workspace package.
+
+### 5. Verify
+
+- `https://<popup-service>.up.railway.app/health` should return `{"status":"ok"}`
+- `https://<twitter-connector>.up.railway.app/health` should return `{"status":"ok",...}`
+
+---
+
 ## Running Tests
 
 ```
