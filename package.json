@@ -6,7 +6,8 @@
   "type": "module",
   "main": "index.js",
   "workspaces": [
-    "demo-popup-connector"
+    "demo-popup-connector",
+    "convos-popup-client"
   ],
   "scripts": {
     "test": "vitest run",
