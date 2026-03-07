@@ -144,11 +144,12 @@ app.post('/webhook/twitter', (req, res) => {
   res.json({ ok: true });
 });
 
-// CRC challenge stub for future real Account Activity API use
+// CRC challenge for Account Activity API
 app.get('/webhook/twitter', (req, res) => {
   const crcToken = req.query.crc_token;
   if (!crcToken) return res.status(400).json({ error: 'missing crc_token' });
-  res.json({ response_token: `sha256=stub` });
+  const hmac = crypto.createHmac('sha256', config.twitterApiSecret).update(crcToken).digest('base64');
+  res.json({ response_token: `sha256=${hmac}` });
 });
 
 // --- Startup ---
