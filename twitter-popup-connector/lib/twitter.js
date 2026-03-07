@@ -42,7 +42,24 @@ export function createOAuth2TwitterClient({ tokenStore, config, refreshFn }) {
     return refreshPromise;
   }
 
-  async function apiFetch(path, options = {}) {
+  async function forceRefresh() {
+    refreshPromise = null;
+    const tokenData = await tokenStore.load();
+    if (!tokenData?.refresh_token) {
+      throw new Error('No refresh token available. Visit /bot-auth to re-authorize.');
+    }
+    console.log('Forcing bot OAuth 2.0 token refresh...');
+    const fresh = await refreshFn(tokenData.refresh_token);
+    const newTokenData = {
+      access_token: fresh.access_token,
+      refresh_token: fresh.refresh_token,
+      expires_at: Date.now() + fresh.expires_in * 1000,
+    };
+    await tokenStore.save(newTokenData);
+    console.log('Bot token force-refreshed successfully.');
+  }
+
+  async function apiFetch(path, options = {}, _retried = false) {
     const token = await getValidToken();
     const res = await fetch(`${apiBaseUrl}${path}`, {
       ...options,
@@ -52,6 +69,11 @@ export function createOAuth2TwitterClient({ tokenStore, config, refreshFn }) {
         ...options.headers,
       },
     });
+    if (res.status === 401 && !_retried) {
+      console.warn('Got 401 from Twitter API, forcing token refresh...');
+      await forceRefresh();
+      return apiFetch(path, options, true);
+    }
     if (!res.ok) {
       throw new Error(`Twitter API error: ${res.status} ${await res.text()}`);
     }
