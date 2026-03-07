@@ -20,6 +20,7 @@ export function loadConfig(env = process.env) {
     twitterApiBaseUrl: env.TWITTER_API_BASE_URL || null,
     twitterOAuthBaseUrl: env.TWITTER_OAUTH_BASE_URL || null,
     pollIntervalMs: parseInt(env.TX_POLL_INTERVAL_MS || '15000', 10),
+    redisUrl: env.REDIS_URL || null,
     nodeEnv: env.NODE_ENV || 'development',
   });
 }

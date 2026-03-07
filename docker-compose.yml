@@ -64,8 +64,11 @@ services:
       TWITTER_API_BASE_URL: http://twitter-tester:4200
       TWITTER_OAUTH_BASE_URL: http://localhost:4200
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      REDIS_URL: redis://redis:6379
       NODE_ENV: development
     depends_on:
+      redis:
+        condition: service_healthy
       popup-service:
         condition: service_healthy
       twitter-tester:

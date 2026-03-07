@@ -59,6 +59,38 @@ export async function exchangeCodeForToken({ clientId, clientSecret, code, redir
   return res.json();
 }
 
+export async function refreshAccessToken({ clientId, clientSecret, refreshToken, apiBaseUrl }) {
+  const body = new URLSearchParams({
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
+    client_id: clientId,
+  });
+
+  const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+
+  if (clientSecret) {
+    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+    headers['Authorization'] = `Basic ${credentials}`;
+  }
+
+  const tokenUrl = apiBaseUrl
+    ? `${apiBaseUrl}/2/oauth2/token`
+    : 'https://api.twitter.com/2/oauth2/token';
+
+  const res = await fetch(tokenUrl, {
+    method: 'POST',
+    headers,
+    body: body.toString(),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(`Token refresh failed: ${res.status} ${err.error_description || err.error || ''}`);
+  }
+
+  return res.json();
+}
+
 export async function getAuthenticatedUser(accessToken, { apiBaseUrl } = {}) {
   const userUrl = apiBaseUrl
     ? `${apiBaseUrl}/2/users/me`

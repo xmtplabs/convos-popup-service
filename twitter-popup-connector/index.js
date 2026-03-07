@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { ConvosPopupClient } from 'convos-popup-client';
 import { loadConfig } from './lib/config.js';
 import { createStore } from './lib/store.js';
-import { createTwitterClient } from './lib/twitter.js';
+import { createOAuth2TwitterClient } from './lib/twitter.js';
+import { createTokenStore } from './lib/token-store.js';
 import { createParser } from './lib/parser.js';
 import { createBot } from './lib/bot.js';
 import * as oauth from './lib/oauth.js';
@@ -128,6 +129,81 @@ app.get('/callback', async (req, res) => {
   }
 });
 
+// --- Bot OAuth 2.0 authorization ---
+
+let tokenStore = null;
+
+// GET /bot-auth — start bot authorization flow
+app.get('/bot-auth', (req, res) => {
+  const state = crypto.randomBytes(16).toString('hex');
+  const codeVerifier = oauth.generateCodeVerifier();
+  const codeChallenge = oauth.generateCodeChallenge(codeVerifier);
+  const redirectUri = `${config.baseUrl}/bot-auth/callback`;
+
+  store.saveOAuthSession(state, {
+    codeVerifier,
+    purpose: 'bot-auth',
+  });
+
+  const authUrl = oauth.buildAuthorizationUrl({
+    clientId: config.twitterOAuthClientId,
+    redirectUri,
+    state,
+    codeChallenge,
+    scopes: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
+    oauthBaseUrl: config.twitterOAuthBaseUrl,
+  });
+
+  res.redirect(authUrl);
+});
+
+// GET /bot-auth/callback — exchange code for bot tokens
+app.get('/bot-auth/callback', async (req, res) => {
+  const { code, state, error } = req.query;
+
+  if (error) {
+    return res.render('x-error', { message: `Bot authorization denied: ${error}` });
+  }
+
+  if (!code || !state) {
+    return res.render('x-error', { message: 'Missing authorization code or state.' });
+  }
+
+  const session = store.getOAuthSession(state);
+  if (!session || session.purpose !== 'bot-auth') {
+    return res.render('x-error', { message: 'Session expired or invalid. Visit /bot-auth to try again.' });
+  }
+
+  store.deleteOAuthSession(state);
+
+  try {
+    const tokenData = await oauth.exchangeCodeForToken({
+      clientId: config.twitterOAuthClientId,
+      clientSecret: config.twitterOAuthClientSecret || null,
+      code,
+      redirectUri: `${config.baseUrl}/bot-auth/callback`,
+      codeVerifier: session.codeVerifier,
+      apiBaseUrl: config.twitterApiBaseUrl,
+    });
+
+    const { username } = await oauth.getAuthenticatedUser(tokenData.access_token, {
+      apiBaseUrl: config.twitterApiBaseUrl,
+    });
+
+    await tokenStore.save({
+      access_token: tokenData.access_token,
+      refresh_token: tokenData.refresh_token,
+      expires_at: Date.now() + tokenData.expires_in * 1000,
+    });
+
+    console.log(`Bot authorized as @${username}`);
+    res.render('bot-auth-success', { username });
+  } catch (err) {
+    console.error('Bot auth callback error:', err.message);
+    res.render('x-error', { message: 'Bot authorization failed. Visit /bot-auth to try again.' });
+  }
+});
+
 // --- Webhook (push from tester / Account Activity API) ---
 
 let bot = null;
@@ -191,14 +267,29 @@ async function start() {
     }
   }
 
-  // Initialize Twitter client and bot
-  const twitterClient = createTwitterClient({
-    apiKey: config.twitterApiKey,
-    apiSecret: config.twitterApiSecret,
-    accessToken: config.twitterAccessToken,
-    accessSecret: config.twitterAccessSecret,
-    apiBaseUrl: config.twitterApiBaseUrl,
+  // Initialize token store and Twitter client (OAuth 2.0)
+  tokenStore = await createTokenStore({ redisUrl: config.redisUrl });
+
+  const refreshFn = (refreshToken) =>
+    oauth.refreshAccessToken({
+      clientId: config.twitterOAuthClientId,
+      clientSecret: config.twitterOAuthClientSecret || null,
+      refreshToken,
+      apiBaseUrl: config.twitterApiBaseUrl,
+    });
+
+  const twitterClient = createOAuth2TwitterClient({
+    tokenStore,
+    config,
+    refreshFn,
   });
+
+  const storedToken = await tokenStore.load();
+  if (!storedToken) {
+    console.log(`*** Bot not yet authorized. Visit ${config.baseUrl}/bot-auth ***`);
+  } else {
+    console.log('Using stored OAuth 2.0 bot token.');
+  }
 
   const parser = createParser({ apiKey: config.openaiApiKey });
 

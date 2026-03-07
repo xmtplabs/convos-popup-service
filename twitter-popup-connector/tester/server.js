@@ -160,11 +160,28 @@ app.post('/oauth2/authorize', (req, res) => {
 
 // POST /2/oauth2/token
 app.post('/2/oauth2/token', (req, res) => {
-  // code is in the URL-encoded body
+  const grantType = req.body.grant_type || '';
+
+  if (grantType === 'refresh_token') {
+    // Handle refresh token requests
+    const refreshToken = req.body.refresh_token || '';
+    const username = refreshToken.startsWith('fake-refresh-')
+      ? refreshToken.slice('fake-refresh-'.length)
+      : 'testuser';
+    return res.json({
+      access_token: `fake-token-${username}`,
+      refresh_token: `fake-refresh-${username}`,
+      token_type: 'bearer',
+      expires_in: 7200,
+    });
+  }
+
+  // Handle authorization_code grant
   const code = req.body.code || '';
   const username = code.startsWith('fakecode-') ? code.slice('fakecode-'.length) : 'testuser';
   res.json({
     access_token: `fake-token-${username}`,
+    refresh_token: `fake-refresh-${username}`,
     token_type: 'bearer',
     expires_in: 7200,
   });
