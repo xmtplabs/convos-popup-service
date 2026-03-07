@@ -79,7 +79,7 @@ describe('end-to-end flow', () => {
       });
 
     expect(groupRes.status).toBe(201);
-    expect(groupRes.body.inviteId).toMatch(/^inv_/);
+    expect(groupRes.body.inviteId).toMatch(/^[A-Za-z0-9_-]{22}$/);
     expect(groupRes.body.inviteUrl).toContain('/invite/');
     expect(groupRes.body.pairingIdentifiers).toEqual(['@alice', '@bob']);
     const { inviteId } = groupRes.body;

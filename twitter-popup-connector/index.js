@@ -39,9 +39,9 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'x', registered: !!popupClient.clientId });
 });
 
-// GET /verify — entry point from popup service landing page
-app.get('/verify', (req, res) => {
-  const { invite_id, namespace } = req.query;
+// GET /verify/:invite_id — entry point (direct link or from popup service landing page)
+app.get('/verify/:invite_id', (req, res) => {
+  const { invite_id } = req.params;
 
   if (!invite_id) {
     return res.render('x-error', { message: 'Missing invite ID.' });
@@ -55,7 +55,7 @@ app.get('/verify', (req, res) => {
   store.saveOAuthSession(state, {
     codeVerifier,
     inviteId: invite_id,
-    namespace: namespace || config.namespace,
+    namespace: config.namespace,
   });
 
   const authUrl = oauth.buildAuthorizationUrl({

@@ -91,7 +91,7 @@ describe('ConvosPopupClient', () => {
     });
 
     expect(group.groupId).toBeTruthy();
-    expect(group.inviteId).toMatch(/^inv_/);
+    expect(group.inviteId).toMatch(/^[A-Za-z0-9_-]{22}$/);
     expect(group.inviteUrl).toContain('/invite/');
     expect(group.inviteUrl).toContain('test-create-group');
     expect(group.pairingIdentifiers).toEqual(['@alice', '@bob']);

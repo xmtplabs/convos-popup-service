@@ -106,9 +106,10 @@ export function createBot({ twitterClient, parser, popupClient, store, config })
 
       console.log(`[bot] Group created:`, JSON.stringify(group));
 
+      const verifyUrl = `${config.baseUrl}/verify/${group.inviteId}`;
       const replyText = parsed.response_text
-        ? parsed.response_text.replace('%%%', group.inviteUrl)
-        : responses.successResponse({ title: parsed.title, inviteUrl: group.inviteUrl });
+        ? parsed.response_text.replace('%%%', verifyUrl)
+        : responses.successResponse({ title: parsed.title, inviteUrl: verifyUrl });
 
       await twitterClient.replyToTweet(tweetId, replyText);
     } catch (err) {

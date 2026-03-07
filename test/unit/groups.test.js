@@ -52,7 +52,7 @@ describe('group routes', () => {
 
       expect(res.status).toBe(201);
       expect(res.body.groupId).toMatch(/^grp_/);
-      expect(res.body.inviteId).toMatch(/^inv_/);
+      expect(res.body.inviteId).toMatch(/^[A-Za-z0-9_-]{22}$/);
       expect(res.body.inviteUrl).toContain('/invite/');
       expect(res.body.pairingIdentifiers).toEqual(['@alice', '@bob']);
     });
