@@ -1,0 +1,7 @@
+FROM node:22-slim
+WORKDIR /app
+COPY twitter-popup-connector/tester/package.json twitter-popup-connector/tester/package-lock.json* ./
+RUN npm install --omit=dev
+COPY twitter-popup-connector/tester/server.js ./
+EXPOSE 4200
+CMD ["node", "server.js"]

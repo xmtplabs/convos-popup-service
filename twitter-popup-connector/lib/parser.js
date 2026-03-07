@@ -6,6 +6,7 @@ const ParseResultSchema = z.object({
   participants: z.array(z.string()).default([]),
   title: z.string().default(''),
   duration: z.string().optional(),
+  response_text: z.string().optional(),
 });
 
 const SYSTEM_PROMPT = `You are a tweet parser for a group chat bot. Given a tweet and context about who is mentioned, extract the user's intent.
@@ -15,6 +16,7 @@ Return JSON with these fields:
 - "participants" (string[]): X usernames (without @) of people to include in the chat. Always include the sender. Never include the bot itself, @ConvosConnect
 - "title" (string): a short title for the group chat based on any topic mentioned. If no topic, generate something brief based on the participants.
 - "duration" (number, optional): if the user mentions a time limit, include it and convert it to be in minute units (e.g. "30 minutes", "1 hour")
+- "response_text" (string): A response to the user telling them that their group is ready, not too formal, not too silly, just confident and fun. Include %%% somewhere in the string, where appropriate, to replace with a link.
 
 Rules:
 - Do NOT include the bot's username in participants

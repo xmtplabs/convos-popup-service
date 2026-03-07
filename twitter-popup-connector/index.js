@@ -131,6 +131,17 @@ app.get('/callback', async (req, res) => {
 // --- Startup ---
 
 async function start() {
+  // Start HTTP server first so endpoints (e.g. app-icon) are available
+  // before registration, which may trigger the popup service to fetch the icon.
+  const server = await new Promise((resolve) => {
+    const s = app.listen(config.port, () => {
+      console.log(`twitter-popup-connector listening on port ${config.port}`);
+      console.log(`Popup service URL: ${config.popupServiceUrl}`);
+      console.log(`Bot username: @${config.twitterBotUsername}`);
+      resolve(s);
+    });
+  });
+
   // Register namespace if no pre-provisioned credentials
   if (!config.clientId || !config.clientSecret) {
     const params = {
@@ -176,12 +187,6 @@ async function start() {
   });
 
   bot.start();
-
-  const server = app.listen(config.port, () => {
-    console.log(`twitter-popup-connector listening on port ${config.port}`);
-    console.log(`Popup service URL: ${config.popupServiceUrl}`);
-    console.log(`Bot username: @${config.twitterBotUsername}`);
-  });
 
   return server;
 }

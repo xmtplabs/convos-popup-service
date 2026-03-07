@@ -104,10 +104,11 @@ export function createBot({ twitterClient, parser, popupClient, store, config })
         pairingIdentifiers: parsed.participants,
       });
 
-      await twitterClient.replyToTweet(
-        tweetId,
-        responses.successResponse({ title: parsed.title, inviteUrl: group.inviteUrl }),
-      );
+      const replyText = parsed.response_text
+        ? parsed.response_text.replace('%%%', group.inviteUrl)
+        : responses.successResponse({ title: parsed.title, inviteUrl: group.inviteUrl });
+
+      await twitterClient.replyToTweet(tweetId, replyText);
     } catch (err) {
       console.error(`Failed to create group for ${tweetId}:`, err.message);
       try {
