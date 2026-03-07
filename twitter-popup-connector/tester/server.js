@@ -7,6 +7,7 @@ app.use(express.urlencoded({ extended: false }));
 const PORT = parseInt(process.env.TESTER_PORT || '4200', 10);
 const BOT_USERNAME = process.env.TWITTER_BOT_USERNAME || 'ConvosConnect';
 const BOT_ID = 'bot-1';
+const CONNECTOR_WEBHOOK_URL = process.env.CONNECTOR_WEBHOOK_URL || '';
 
 // --- In-memory state ---
 
@@ -220,7 +221,9 @@ app.get('/', (_req, res) => {
     return d.innerHTML;
   }
   function linkify(s) {
-    return esc(s).replace(/(https?:\\/\\/[^\\s]+)/g, '<a href="$$1" target="_blank">$$1</a>');
+    return esc(s).replace(/(https?:\\/\\/[^\\s]+)/g, function(url) {
+      return '<a href="' + url + '" target="_blank">' + url + '</a>';
+    });
   }
   function renderTweets(tweets) {
     document.getElementById('count').textContent = tweets.length;
@@ -257,12 +260,27 @@ app.get('/', (_req, res) => {
 });
 
 // POST /tweet — user posts a tweet from the web UI
-app.post('/tweet', (req, res) => {
+app.post('/tweet', async (req, res) => {
   const { username, text } = req.body;
   if (!username || !text) return res.status(400).json({ error: 'missing fields' });
   const authorId = ensureUser(username.replace(/^@/, ''));
   const tweet = makeTweet({ text, authorId, replyToId: null });
   res.json({ ok: true, id: tweet.id });
+
+  // Push to connector webhook if tweet mentions the bot
+  if (CONNECTOR_WEBHOOK_URL && text.toLowerCase().includes(`@${BOT_USERNAME.toLowerCase()}`)) {
+    const payload = { tweet, includes: { users: usersForTweets([tweet]) } };
+    try {
+      await fetch(CONNECTOR_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      console.log(`[tester] Pushed tweet #${tweet.id} to connector webhook`);
+    } catch (err) {
+      console.error(`[tester] Failed to push tweet #${tweet.id} to webhook:`, err.message);
+    }
+  }
 });
 
 function escapeHtml(str) {

@@ -104,6 +104,8 @@ export function createBot({ twitterClient, parser, popupClient, store, config })
         pairingIdentifiers: parsed.participants,
       });
 
+      console.log(`[bot] Group created:`, JSON.stringify(group));
+
       const replyText = parsed.response_text
         ? parsed.response_text.replace('%%%', group.inviteUrl)
         : responses.successResponse({ title: parsed.title, inviteUrl: group.inviteUrl });

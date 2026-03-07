@@ -44,6 +44,7 @@ services:
     environment:
       TESTER_PORT: 4200
       TWITTER_BOT_USERNAME: ${TWITTER_BOT_USERNAME:-ConvosConnect}
+      CONNECTOR_WEBHOOK_URL: http://twitter-popup-connector:4100/webhook/twitter
 
   twitter-popup-connector:
     build:

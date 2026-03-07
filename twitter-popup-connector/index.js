@@ -128,6 +128,29 @@ app.get('/callback', async (req, res) => {
   }
 });
 
+// --- Webhook (push from tester / Account Activity API) ---
+
+let bot = null;
+
+app.post('/webhook/twitter', (req, res) => {
+  const { tweet, includes } = req.body;
+  if (!bot || !tweet) {
+    return res.status(400).json({ error: 'missing tweet payload or bot not ready' });
+  }
+  console.log(`[webhook] Received tweet #${tweet.id}`);
+  bot.processTweet(tweet, includes || { users: [] }).catch((err) => {
+    console.error(`[webhook] Error processing tweet #${tweet.id}:`, err.message);
+  });
+  res.json({ ok: true });
+});
+
+// CRC challenge stub for future real Account Activity API use
+app.get('/webhook/twitter', (req, res) => {
+  const crcToken = req.query.crc_token;
+  if (!crcToken) return res.status(400).json({ error: 'missing crc_token' });
+  res.json({ response_token: `sha256=stub` });
+});
+
 // --- Startup ---
 
 async function start() {
@@ -178,7 +201,7 @@ async function start() {
 
   const parser = createParser({ apiKey: config.openaiApiKey });
 
-  const bot = createBot({
+  bot = createBot({
     twitterClient,
     parser,
     popupClient,
@@ -186,7 +209,11 @@ async function start() {
     config,
   });
 
-  bot.start();
+  if (config.twitterApiBaseUrl) {
+    console.log(`Webhook mode (tester): polling disabled, waiting for POST /webhook/twitter`);
+  } else {
+    bot.start();
+  }
 
   return server;
 }
