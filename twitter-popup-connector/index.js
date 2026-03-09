@@ -106,6 +106,11 @@ app.get('/callback', async (req, res) => {
       apiBaseUrl: config.twitterApiBaseUrl,
     });
 
+    // Prevent the bot account from verifying — it would revoke bot tokens
+    if (username.toLowerCase() === config.twitterBotUsername.toLowerCase()) {
+      return res.render('x-error', { message: 'The bot account cannot be used for user verification.' });
+    }
+
     // Verify with popup service
     const result = await popupClient.verifyUser({
       pairingIdentifier: username,
