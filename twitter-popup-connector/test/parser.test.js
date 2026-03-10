@@ -347,7 +347,7 @@ describe('output structure', () => {
     expect(result.title.length).toBeLessThanOrEqual(50);
   });
 
-  it('duration is a string or undefined', async () => {
+  it('duration is a number or undefined', async () => {
     const result = await parse({
       tweetText: '@ConvosConnect @bob quick 15 min chat',
       senderUsername: 'alice',
@@ -355,7 +355,7 @@ describe('output structure', () => {
     });
 
     if (result.duration !== undefined) {
-      expect(typeof result.duration).toBe('string');
+      expect(typeof result.duration).toBe('number');
     }
   });
 });

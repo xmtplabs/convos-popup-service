@@ -5,7 +5,7 @@ const ParseResultSchema = z.object({
   understood: z.boolean(),
   participants: z.array(z.string()).default([]),
   title: z.string().default(''),
-  duration: z.string().optional(),
+  duration: z.coerce.number().optional(),
   response_text: z.string().optional(),
 });
 
