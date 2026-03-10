@@ -4,7 +4,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /
 COPY package.json package-lock.json* ./
 COPY twitter-popup-connector/package.json twitter-popup-connector/
 COPY convos-popup-client/package.json convos-popup-client/
-COPY demo-popup-connector/package.json demo-popup-connector/
 RUN npm ci --omit=dev
 
 FROM node:22-slim

@@ -9,6 +9,8 @@ import { createOAuth2TwitterClient } from './lib/twitter.js';
 import { createTokenStore } from './lib/token-store.js';
 import { createParser } from './lib/parser.js';
 import { createBot } from './lib/bot.js';
+import { transformV1Tweet } from './lib/webhook-transform.js';
+import { createAccountActivityClient } from './lib/account-activity.js';
 import * as oauth from './lib/oauth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -18,7 +20,9 @@ const store = createStore();
 const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.json());
+app.use(express.json({
+  verify: (req, _res, buf) => { req.rawBody = buf; },
+}));
 app.use(express.urlencoded({ extended: false }));
 
 // --- Popup client ---
@@ -213,10 +217,47 @@ app.get('/bot-auth/callback', async (req, res) => {
 
 let bot = null;
 
+function validateWebhookSignature(req) {
+  const signature = req.headers['x-twitter-webhooks-signature'];
+  if (!signature) return false;
+  const hmac = crypto.createHmac('sha256', config.twitterApiSecret).update(req.rawBody).digest('base64');
+  const expected = Buffer.from(`sha256=${hmac}`);
+  const received = Buffer.from(signature);
+  return expected.length === received.length && crypto.timingSafeEqual(expected, received);
+}
+
 app.post('/webhook/twitter', (req, res) => {
+  if (!bot) {
+    return res.status(400).json({ error: 'bot not ready' });
+  }
+
+  // v1.1 Account Activity API format
+  if (req.body.tweet_create_events) {
+    if (!validateWebhookSignature(req)) {
+      return res.status(401).json({ error: 'invalid signature' });
+    }
+
+    const events = req.body.tweet_create_events;
+    const botUser = config.twitterBotUsername.toLowerCase();
+
+    for (const v1Event of events) {
+      // Skip bot's own tweets
+      if (v1Event.user?.screen_name?.toLowerCase() === botUser) continue;
+
+      const { tweet, includes } = transformV1Tweet(v1Event);
+      console.log(`[webhook] Received v1.1 tweet #${tweet.id}`);
+      bot.processTweet(tweet, includes).catch((err) => {
+        console.error(`[webhook] Error processing tweet #${tweet.id}:`, err.message);
+      });
+    }
+
+    return res.json({ ok: true });
+  }
+
+  // v2 tester format (existing)
   const { tweet, includes } = req.body;
-  if (!bot || !tweet) {
-    return res.status(400).json({ error: 'missing tweet payload or bot not ready' });
+  if (!tweet) {
+    return res.status(400).json({ error: 'missing tweet payload' });
   }
   console.log(`[webhook] Received tweet #${tweet.id}`);
   bot.processTweet(tweet, includes || { users: [] }).catch((err) => {
@@ -308,6 +349,16 @@ async function start() {
 
   if (config.twitterApiBaseUrl) {
     console.log(`Webhook mode (tester): polling disabled, waiting for POST /webhook/twitter`);
+  } else if (config.twitterWebhookEnv) {
+    try {
+      const aaa = createAccountActivityClient({ config });
+      await aaa.setup();
+      console.log(`Webhook mode (Account Activity API): polling disabled, receiving real-time events`);
+    } catch (err) {
+      console.error(`Account Activity API setup failed: ${err.message}`);
+      console.log('Falling back to polling mode.');
+      bot.start();
+    }
   } else {
     bot.start();
   }

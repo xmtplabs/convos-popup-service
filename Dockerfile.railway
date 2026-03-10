@@ -2,7 +2,6 @@ FROM node:22-slim AS deps
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json* ./
-COPY demo-popup-connector/package.json demo-popup-connector/
 COPY convos-popup-client/package.json convos-popup-client/
 COPY twitter-popup-connector/package.json twitter-popup-connector/
 RUN npm ci --omit=dev

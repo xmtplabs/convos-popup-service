@@ -6,7 +6,6 @@
   "type": "module",
   "main": "index.js",
   "workspaces": [
-    "demo-popup-connector",
     "convos-popup-client",
     "twitter-popup-connector"
   ],
